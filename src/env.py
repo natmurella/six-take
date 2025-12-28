@@ -246,37 +246,6 @@ class SixTakesEnv(gym.Env):
     
     def _get_obs(self, player_idx: int = 0):
 
-        # print all main structures
-        # print("Hands:")
-        # for idx, hand in enumerate(self.hands):
-        #     if idx == 0:
-        #         print(f"\tPlayer: ", hand)
-        #     elif idx >= self.num_players:
-        #         continue
-        #     else:
-        #         print(f"\tOpponent {idx}: ", hand)
-        # print("Stacks:")
-        # for idx, stack in enumerate(self.stacks):
-        #     print(f"\tStack {idx}: ", stack)
-        # print("Scores:")
-        # for idx, score in enumerate(self.scores):
-        #     if idx == 0:
-        #         print(f"\tPlayer: ", score)
-        #     elif idx >= self.num_players:
-        #         continue
-        #     else:
-        #         print(f"\tOpponent {idx}: ", score)
-        # print("Unseen Cards:", self.unseen_cards)
-        # print("History:")
-        # for idx, hist in enumerate(self.history):
-        #     if idx == 0:
-        #         print(f"\tPlayer: ", hist)
-        #     elif idx >= self.num_players:
-        #         continue
-        #     else:
-        #         print(f"\tOpponent {idx}: ", hist)
-
-
         # make padded hand
         hand = self.hands[player_idx]
         padded_hand = hand + [-1] * (INITIAL_HAND_SIZE - len(hand))
@@ -323,21 +292,6 @@ class SixTakesEnv(gym.Env):
                 continue
             opponent_scores.append(score)
         s_idx_opp_scores = [opponent_scores[i] for i in s_idx]
-
-        if player_idx == 0:
-            # print all obs components
-            print("Observation Components:")
-            print("\tPadded Hand: ", padded_hand)
-            print("\tStacks Sorted Padded: ", stacks_sorted_padded)
-            print("\tStack Sizes: ", stack_sizes)
-            print("\tUnseen Cards Array: ", unseen_cards_array)
-            print("\tOwn History Padded: ", h_padded)
-            print("\tOpponent Histories Padded:")
-            for idx, opp_hist in enumerate(opp_h_padded):
-                print(f"\t\tOpponent {idx}: ", opp_hist)
-            print("\tOwn Score: ", own_score)
-            print("\tOpponent Scores Sorted: ", s_idx_opp_scores)
-        
         
         obs = {
             "round": self.round,
