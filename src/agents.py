@@ -43,3 +43,32 @@ class LargeChoiceAgent(BaseAgent):
         valid_cards = [card for card in hand if card != -1]
         max_card = max(valid_cards)
         return int(valid_cards.index(max_card))
+    
+
+class MaskedPPOAgent(BaseAgent):
+    
+    def __init__(self, model_path: str, deterministic: bool = True):
+        """
+        Agent that uses a trained MaskablePPO model.
+        
+        Args:
+            model_path: Path to the saved model file
+            deterministic: Whether to use deterministic actions
+        """
+        super().__init__()
+        from sb3_contrib import MaskablePPO
+        self.model = MaskablePPO.load(model_path)
+        self.deterministic = deterministic
+    
+    def policy(self, obs):
+        # Compute action mask from the hand
+        hand = obs['hand']
+        action_mask = np.array([card != -1 for card in hand], dtype=bool)
+        
+        # Get action from model
+        action, _ = self.model.predict(
+            obs, 
+            action_masks=action_mask, 
+            deterministic=self.deterministic
+        )
+        return int(action)

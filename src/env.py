@@ -42,6 +42,7 @@ class SixTakesEnv(gym.Env):
         self.action_space = spaces.Discrete(INITIAL_HAND_SIZE)
         
         # Observation: agent hand (10 cards) + round number (1)
+        # Always use 9 opponents (max) to allow model flexibility with different opponent counts
         self.observation_space = spaces.Dict({
             "round": spaces.Discrete(
                 INITIAL_HAND_SIZE + 1
@@ -82,8 +83,11 @@ class SixTakesEnv(gym.Env):
                 shape=(9,INITIAL_HAND_SIZE),
                 dtype=np.int32
             ),
-            "own_score": spaces.Discrete(
-                1
+            "own_score": spaces.Box(
+                low=0,
+                high=MAX_CARD_VALUE * INITIAL_HAND_SIZE,
+                shape=(1,),
+                dtype=np.int32
             ),
             "opponent_scores": spaces.Box(
                 low=0,
@@ -99,6 +103,8 @@ class SixTakesEnv(gym.Env):
         self.deck = None
 
         self.round = 0
+
+        self.action_mask = np.ones(INITIAL_HAND_SIZE, dtype=bool)
 
         self.hands = [[] for _ in range(self.num_players)]
 
@@ -192,6 +198,11 @@ class SixTakesEnv(gym.Env):
             terminated = True
         
         self.round += 1
+        
+        # Update action mask
+        self.action_mask = np.zeros(INITIAL_HAND_SIZE, dtype=bool)
+        self.action_mask[:len(self.hands[0])] = True
+        
         obs = self._get_obs()
         info = self._get_info()
         reward = -player_round_reward
@@ -240,6 +251,10 @@ class SixTakesEnv(gym.Env):
         else:
             self.scores = [0 for _ in range(self.num_players)]
 
+        # Update action mask
+        self.action_mask = np.zeros(INITIAL_HAND_SIZE, dtype=bool)
+        self.action_mask[:len(self.hands[0])] = True
+
         obs = self._get_obs()
         info = self._get_info()
 
@@ -287,6 +302,9 @@ class SixTakesEnv(gym.Env):
         opp_h_padded = [
             hist + [-1] * (INITIAL_HAND_SIZE - len(hist)) for hist in opp_h_sorted
         ]
+        # Pad to 9 opponents (fill empty slots with -1)
+        while len(opp_h_padded) < 9:
+            opp_h_padded.append([-1] * INITIAL_HAND_SIZE)
 
         # scores
         own_score = self.scores[player_idx]
@@ -296,6 +314,9 @@ class SixTakesEnv(gym.Env):
                 continue
             opponent_scores.append(score)
         s_idx_opp_scores = [opponent_scores[i] for i in s_idx]
+        # Pad to 9 opponents (fill empty slots with 0)
+        while len(s_idx_opp_scores) < 9:
+            s_idx_opp_scores.append(0)
         
         obs = {
             "round": self.round,
@@ -305,14 +326,18 @@ class SixTakesEnv(gym.Env):
             "unseen_cards": unseen_cards_array,
             "own_history": np.array(h_padded, dtype=np.int32),
             "opponent_history": np.array(opp_h_padded, dtype=np.int32),
-            "own_score": own_score,
+            "own_score": np.array([own_score], dtype=np.int32),
             "opponent_scores": np.array(s_idx_opp_scores, dtype=np.int32)
         }
 
         return obs
     
     def _get_info(self):
-        return {}
+        info = {
+            "action_mask": self.action_mask,
+            "scores": self.scores
+        }
+        return info
     
     def card_to_score(self, card: int) -> int:
 
