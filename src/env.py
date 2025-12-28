@@ -157,20 +157,24 @@ class SixTakesEnv(gym.Env):
             stack_target_idx = -1
             stack_target_top = float('-inf')
             stack_min_idx = -1
+            stack_min_score = float('inf')
             stack_min_top = float('inf')
             for s_idx, stack in enumerate(self.stacks):
                 stack_top = stack[-1]
                 if card > stack_top and stack_top > stack_target_top:
                     stack_target_top = stack_top
                     stack_target_idx = s_idx
-                if stack_top < stack_min_top:
+                stack_score = 0
+                for sc in stack:
+                    stack_score += self.card_to_score(sc)
+                if stack_score <= stack_min_score and stack_top < stack_min_top:
+                    stack_min_score = stack_score
                     stack_min_top = stack_top
                     stack_min_idx = s_idx
             
             wipe_stack = False
             if stack_target_idx == -1:
                 stack_target_idx = stack_min_idx
-                stack_target_top = stack_min_top
                 wipe_stack = True
             
             if len(self.stacks[stack_target_idx]) >= MAX_STACK_SIZE or wipe_stack:

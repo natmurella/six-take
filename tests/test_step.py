@@ -62,5 +62,25 @@ def test_simple():
 
     # check scores are correct
     assert obs["own_score"] == 1
+    
+    assert reward == -1
+
+    action = player.policy(obs)
+    obs, reward, terminated, truncated, info = env.step(action)
+    total_reward += reward
+
+    assert reward == 0
+
+    action = player.policy(obs)
+    obs, reward, terminated, truncated, info = env.step(action)
+    total_reward += reward
+
+    assert reward == 0
+
+    action = player.policy(obs)
+    obs, reward, terminated, truncated, info = env.step(action)
+    total_reward += reward
+
+    assert reward == 0
 
     
