@@ -73,4 +73,4 @@ I did consider other heuristics to potentially improve training speed, but event
 
 I trained the PPO agent for 2 million timesteps. The learning curves above show the average reward over time (negative from penalty points), the winrate over time (percentage the agent won the 4 player set of rounds), and the score difference over time (the agent's score minus the winner's score).
 
-In the first 50,000 timesteps, we can see clear improvements in all metrics, in particular the winrate increasing from 0.2 (worse than random) to about 0.4. After that, however, the performance plateaus and stays around 0.4 winrate for the rest of the epochs.
+In the first 50,000 timesteps, we can see clear improvements in all metrics, in particular the winrate increasing from 0.2 (worse than random) to about 0.4. After that, however, the performance plateaus and stays around 0.4 winrate for the rest of the epochs. 
