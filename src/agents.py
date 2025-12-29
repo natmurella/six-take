@@ -48,13 +48,6 @@ class LargeChoiceAgent(BaseAgent):
 class MaskedPPOAgent(BaseAgent):
     
     def __init__(self, model_path: str, deterministic: bool = True):
-        """
-        Agent that uses a trained MaskablePPO model.
-        
-        Args:
-            model_path: Path to the saved model file
-            deterministic: Whether to use deterministic actions
-        """
         super().__init__()
         from sb3_contrib import MaskablePPO
         self.model = MaskablePPO.load(model_path)

@@ -6,7 +6,7 @@ from sb3_contrib.common.wrappers import ActionMasker
 from stable_baselines3.common.env_util import make_vec_env
 
 from src.env import SixTakesEnv
-from src.agents import RandomAgent, MaskedPPOAgent
+from src.agents import RandomAgent, MaskedPPOAgent, LargeChoiceAgent, SmallChoiceAgent
 
 def mask_fn(env: gym.Env):
     return env.get_wrapper_attr("action_mask")
@@ -14,9 +14,18 @@ def mask_fn(env: gym.Env):
 def make_eval_env(seed=None):
     env = SixTakesEnv(
         opponents=[
-            MaskedPPOAgent(model_path="models/ppo_v1"),
-            MaskedPPOAgent(model_path="models/ppo_v1"),
-            MaskedPPOAgent(model_path="models/ppo_v1")
+            # MaskedPPOAgent(model_path="models/ppo_best"),
+            # MaskedPPOAgent(model_path="models/ppo_best"),
+            # MaskedPPOAgent(model_path="models/ppo_best")
+            # RandomAgent(),
+            # RandomAgent(),
+            # RandomAgent()
+            # RandomAgent(),
+            # SmallChoiceAgent(),
+            # LargeChoiceAgent()
+            SmallChoiceAgent(),
+            SmallChoiceAgent(),
+            SmallChoiceAgent()
         ]
     )
     return ActionMasker(env, mask_fn)
@@ -32,6 +41,8 @@ def evaluate(
     placements = []
     distances = []
     total_rewards = []
+
+    group_scores = [0 for _ in range(4)] 
 
     for ep in range(n_episodes):
         env = make_eval_env(seed=ep)
@@ -67,6 +78,9 @@ def evaluate(
             dist = final_score - scores_ordered[0]
             distances.append(dist)
 
+        for i in range(4):
+            group_scores[i] += info_scores[i]
+
         print(
             f"Episode {ep:03d} | "
             f"Final score: {final_score:4d} | "
@@ -86,6 +100,12 @@ def evaluate(
     print(f"Mean reward:      {np.mean(total_rewards):.2f}")
     print(f"Mean placement:   {np.mean(placements):.2f}")
     print(f"Mean distance to 1st: {np.mean(distances):.2f}")
+    print("Group total scores:")
+    for i in range(4):
+        if i == 0:
+            print(f"  Agent (You): {group_scores[i]}")
+        else:
+            print(f"  Opponent {i}: {group_scores[i]}")
 
 
     return {
@@ -95,7 +115,7 @@ def evaluate(
 
 
 if __name__ == "__main__":
-    MODEL_PATH = "models/ppo_v1"
+    MODEL_PATH = "models/ppo_best"
 
     model = MaskablePPO.load(MODEL_PATH)
 

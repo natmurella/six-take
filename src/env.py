@@ -38,11 +38,8 @@ class SixTakesEnv(gym.Env):
         if self.num_players > 10:
             raise ValueError("Maximum number of players is 10.")
         
-        # Agent chooses index of card in hand
         self.action_space = spaces.Discrete(INITIAL_HAND_SIZE)
         
-        # Observation: agent hand (10 cards) + round number (1)
-        # Always use 9 opponents (max) to allow model flexibility with different opponent counts
         self.observation_space = spaces.Dict({
             "round": spaces.Discrete(
                 INITIAL_HAND_SIZE + 1
@@ -333,9 +330,19 @@ class SixTakesEnv(gym.Env):
         return obs
     
     def _get_info(self):
+
+        own_score = int(self.scores[0])
+        winner = int(np.argmin(self.scores))
+        score_diff = int(own_score - self.scores[winner])
+
+
         info = {
             "action_mask": self.action_mask,
-            "scores": self.scores
+            "scores": self.scores,
+            "own_score": own_score,
+            "winner": winner,
+            "score_diff": score_diff
+
         }
         return info
     
